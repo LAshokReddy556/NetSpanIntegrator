@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/commons-codec-1.5.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/commons-collections.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/dcm4che-base64-2.0.21.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/ezmorph.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/httpcore-4.0.1.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/Downloads/ashok/opencsv-1.6.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/httpclient-4.0.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/Downloads/ashok/commons-configuration-1.5.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/Downloads/ashok/apache-commons-lang.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/jsse(1).jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/gson-2.2.2.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jarfiles/json-lib-2.2.2-jdk15.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/jars/commons-beanutils-1.7.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/mpesajars/java-json.jar"/>
+	<classpathentry kind="lib" path="/home/ashokreddy/ashok/commons-net-3.3.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
