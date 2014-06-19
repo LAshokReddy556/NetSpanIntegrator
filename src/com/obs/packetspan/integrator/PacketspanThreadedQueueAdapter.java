@@ -1,4 +1,4 @@
-package com.obs.netspan.integrator;
+package com.obs.packetspan.integrator;
 
 import java.io.File;
 import java.util.Queue;
@@ -9,13 +9,14 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 
-public class ThreadedQueueAdapter {
+public class PacketspanThreadedQueueAdapter {
 	
 	public static void main(String[] args) {
 
 		try {
 			Queue<ProcessRequestData> queue = new ConcurrentLinkedQueue<ProcessRequestData>();
-			PropertiesConfiguration prop = new PropertiesConfiguration("NetSpanIntegrator.properties");
+			PropertiesConfiguration prop = new PropertiesConfiguration("PacketspanIntegrator.ini");
+			
 			String logPath=prop.getString("LogFilePath");
 			File filelocation = new File(logPath);			
 			if(!filelocation.isDirectory()){
@@ -23,15 +24,13 @@ public class ThreadedQueueAdapter {
 			}	
 			
 			Logger logger = Logger.getRootLogger();
-			FileAppender appender = (FileAppender)logger.getAppender("fileAppender2");
-			appender.setFile(logPath+"consumer.log");
+			FileAppender appender = (FileAppender)logger.getAppender("fileAppender");
+			appender.setFile(logPath+"PacketspanIntegrator.log");
 			appender.activateOptions();
-			FileAppender appender1 = (FileAppender)logger.getAppender("fileAppender3");
-			appender1.setFile(logPath+"producer.log");
-			appender1.activateOptions();
+		
 			
-			Producer p = new Producer(queue,prop);
-			Consumer c = new Consumer(queue,prop);
+			PacketspanProducer p = new PacketspanProducer(queue,prop);
+			PacketspanConsumer c = new PacketspanConsumer(queue,prop);
             
 			
 			Thread t1 = new Thread(p);
@@ -42,12 +41,6 @@ public class ThreadedQueueAdapter {
 			
 		} catch (ConfigurationException e) {
 			System.out.println("(ConfigurationException) Properties file loading error.... : " + e.getMessage());
-		} catch (NullPointerException e) {
-			System.out.println("AuthenticationException :  BSS system server username (or) password you entered is incorrect . check in the Integrator.properties file");
-			return;
-		} catch (IllegalAccessError e) {
-			System.out.println("Resource NotFound Exception :  BSS server system get or post url error");
-			return;
 		} 
 		
 

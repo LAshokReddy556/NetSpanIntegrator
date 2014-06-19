@@ -1,16 +1,16 @@
-package com.obs.netspan.integrator;
+package com.obs.packetspan.integrator;
 
 import org.apache.commons.net.telnet.*;
 import java.io.*;
 import java.util.Properties;
 
-public class TelnetData {
+public class SendingDataToPacketspanServer {
 	private TelnetClient telnet = new TelnetClient();
 	private InputStream in;
 	private PrintStream out;
 	private String prompt = "Access denied";
 
-	public TelnetData(String server, String password) {
+	public SendingDataToPacketspanServer(String server, String password) {
 		try {
 			// Connect to the specified server
 			telnet.connect(server, 23);

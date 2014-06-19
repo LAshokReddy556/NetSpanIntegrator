@@ -1,4 +1,4 @@
-package com.obs.netspan.integrator;
+package com.obs.packetspan.integrator;
 
 import java.io.IOException;
 import java.util.Queue;
@@ -24,7 +24,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.Logger;
 
-public class Consumer implements Runnable {
+public class PacketspanConsumer implements Runnable {
 
 	private static Queue<ProcessRequestData> queue;
 	private static PropertiesConfiguration prop;
@@ -32,7 +32,7 @@ public class Consumer implements Runnable {
 	private static byte[] encoded;
 	private static String tenantIdentifier;
 	private static HttpClient httpClient;
-	static Logger logger = Logger.getLogger(Consumer.class);
+	static Logger logger = Logger.getLogger("");
 	private ProcessCommandImpl processCommand;
 	public static int wait;
 
@@ -72,7 +72,7 @@ public class Consumer implements Runnable {
 			ssf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 			ClientConnectionManager ccm = base.getConnectionManager();
 			SchemeRegistry sr = ccm.getSchemeRegistry();
-			sr.register(new Scheme("https", ssf, 8443));
+			sr.register(new Scheme("https", ssf, 443));
 			return new DefaultHttpClient(ccm, base.getParams());
 		} catch (Exception ex) {
 			return null;
@@ -80,7 +80,7 @@ public class Consumer implements Runnable {
 	}
 
 	@SuppressWarnings("static-access")
-	public Consumer(Queue<ProcessRequestData> queue1,
+	public PacketspanConsumer(Queue<ProcessRequestData> queue1,
 			PropertiesConfiguration prop2) {
 		try {
 			this.queue = queue1;
@@ -90,8 +90,8 @@ public class Consumer implements Runnable {
 			String username = prop.getString("username");
 			String password = prop.getString("password");
 			tenantIdentifier = prop.getString("tenantIdentfier");
-			String ashok = username.trim() + ":" + password.trim();
-			encoded = Base64.encodeBase64(ashok.getBytes());
+			String encodedpassword = username.trim() + ":" + password.trim();
+			encoded = Base64.encodeBase64(encodedpassword.getBytes());
 			processCommand=new ProcessCommandImpl(prop2);
 		} catch (Exception e) {
 			logger.error("Exception:" + e.getStackTrace());
@@ -119,8 +119,7 @@ public class Consumer implements Runnable {
 		try {
 				while (!queue.isEmpty()) {
 					for (ProcessRequestData processRequestData : queue) {
-						queue.poll();
-						
+						queue.poll();		
 						processCommand.processRequest(processRequestData);					
 					}
 					queue.notifyAll();
@@ -135,7 +134,7 @@ public class Consumer implements Runnable {
 	public static void sendResponse(String output, Long id, Long prdetailsId) {
 		
 		try {
-			post = new HttpPost(prop.getString("PostQuery").trim() + id);
+			post = new HttpPost(prop.getString("BSSServerQuery").trim() + "/" +id);
 			post.setHeader("Authorization", "Basic " + new String(encoded));
 			post.setHeader("Content-Type", "application/json");
 			post.addHeader("X-Mifos-Platform-TenantId", tenantIdentifier);

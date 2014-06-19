@@ -1,4 +1,4 @@
-package com.obs.netspan.integrator;
+package com.obs.packetspan.integrator;
 
 public class EntitlementsData {
 

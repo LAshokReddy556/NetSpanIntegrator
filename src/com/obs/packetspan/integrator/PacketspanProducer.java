@@ -1,4 +1,4 @@
-package com.obs.netspan.integrator;
+package com.obs.packetspan.integrator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Queue;
 
+import javax.management.RuntimeErrorException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -16,6 +17,7 @@ import javax.security.cert.X509Certificate;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthenticationException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -29,10 +31,10 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class Producer implements Runnable {
+public class PacketspanProducer implements Runnable {
 
-	private int no;
-	private String ashok;
+	private int no,recordsCount;
+	private String encodedPassword,provisioningSystem;
 	PropertiesConfiguration prop;
 	BufferedReader br = null;
 	private Queue<ProcessRequestData> messageQueue;
@@ -43,7 +45,7 @@ public class Producer implements Runnable {
 	private static HttpClient httpClient;
 	private static Gson gsonConverter = new Gson();
 	private int wait;
-	static Logger logger = Logger.getLogger(Producer.class);
+	static Logger logger = Logger.getLogger("");
 
 	public static HttpClient wrapClient(HttpClient base) {
 
@@ -85,14 +87,14 @@ public class Producer implements Runnable {
 			ssf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 			ClientConnectionManager ccm = base.getConnectionManager();
 			SchemeRegistry sr = ccm.getSchemeRegistry();
-			sr.register(new Scheme("https", ssf, 8443));
+			sr.register(new Scheme("https", ssf, 443));
 			return new DefaultHttpClient(ccm, base.getParams());
 		} catch (Exception ex) {
 			return null;
 		}
 	}
 
-	public Producer(Queue<ProcessRequestData> messageQueue1,
+	public PacketspanProducer(Queue<ProcessRequestData> messageQueue1,
 			PropertiesConfiguration prop1) {
 		// 1. Here intialize connection object for connecting to the RESTful
 		// service
@@ -103,11 +105,13 @@ public class Producer implements Runnable {
 		httpClient = wrapClient(httpClient);
 		String username = prop.getString("username");
 		String password = prop.getString("password");
+		provisioningSystem = prop.getString("provisioningSystem");
+	    recordsCount = prop.getInt("recordsCount");
 		wait = prop.getInt("ThreadSleep_period");
-		ashok = username.trim() + ":" + password.trim();
+		encodedPassword = username.trim() + ":" + password.trim();
 		tenantIdentifier = prop.getString("tenantIdentfier");	
-		getRequest = new HttpGet(prop.getString("GetQuery").trim());
-		encoded = Base64.encodeBase64(ashok.getBytes());
+		getRequest = new HttpGet(prop.getString("BSSServerQuery").trim()+"?no="+recordsCount+"&provisioningSystem="+provisioningSystem);
+		encoded = Base64.encodeBase64(encodedPassword.getBytes());
 		getRequest.setHeader("Authorization", "Basic " + new String(encoded));
 		getRequest.setHeader("Content-Type", "application/json");
 		getRequest.addHeader("X-Mifos-Platform-TenantId", tenantIdentifier);
@@ -172,13 +176,13 @@ public class Producer implements Runnable {
 				logger.error("Authentication Failed : HTTP error code is: "
 						+ response.getStatusLine().getStatusCode());
 				httpClient.getConnectionManager().shutdown();	
-				throw new NullPointerException();		
+				throw new AuthenticationException("AuthenticationException :  BSS system server username (or) password you entered is incorrect . check in the PacketspanIntegrator.ini file");		
 			}
 			else if(response.getStatusLine().getStatusCode() == 404){
 				logger.error("Resource Not Found Exception : HTTP error code is: "
 						+ response.getStatusLine().getStatusCode());
 				httpClient.getConnectionManager().shutdown();
-				throw new IllegalAccessError();			
+				throw new RuntimeErrorException(null, "Resource NotFound Exception :  BSS server system 'BSSServerQuery' url error.");			
 			}
 			else if(response.getStatusLine().getStatusCode() != 200){
 				logger.error("Failed : HTTP error code : "
@@ -219,8 +223,16 @@ public class Producer implements Runnable {
 		} catch (IllegalStateException e) {
 			logger.error("IllegalStateException: " + e.getCause().getLocalizedMessage());
 			
-		} catch (Exception e) {
-			logger.error("Exception: " + e.getCause().getLocalizedMessage());
+		} catch (AuthenticationException e) {						
+			
+			logger.error("AuthenticationException: " + e.getLocalizedMessage());
+			System.exit(0);
+			
+		} catch (RuntimeErrorException e) {
+			
+			logger.error("ResourceNotFoundException: " + e.getLocalizedMessage());
+			System.exit(0);
+			
 		}
 
 	}
@@ -229,7 +241,8 @@ public class Producer implements Runnable {
 		// TODO Auto-generated method stub
 		ProcessRequestData m;
 		try {
-			if (entitlement.getProvisioingSystem().equalsIgnoreCase("Packetspan"))
+			
+			if (entitlement.getProvisioingSystem().equalsIgnoreCase(provisioningSystem))
 			 {					
 				m = new ProcessRequestData(no, entitlement.getProduct(),
 						entitlement.getHardwareId(),
